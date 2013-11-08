@@ -88,25 +88,25 @@ public final class TwoEntityQueryGenerator implements RelationQueryGenerator {
         String revisionPropertyPath = verEntCfg.getRevisionNumberPath();
         String originalIdPropertyName = verEntCfg.getOriginalIdPropName();
 
-        String eeOriginalIdPropertyPath = "ee." + originalIdPropertyName;
+        String eeOriginalIdPropertyPath = "ee__." + originalIdPropertyName;
 
         // SELECT new list(ee) FROM middleEntity ee
-        QueryBuilder qb = new QueryBuilder(versionsMiddleEntityName, "ee");
-        qb.addFrom(referencedIdData.getAuditEntityName(), "e");
-        qb.addProjection("new list", "ee, e", false, false);
+        QueryBuilder qb = new QueryBuilder(versionsMiddleEntityName, "ee__");
+        qb.addFrom(referencedIdData.getAuditEntityName(), "e__");
+        qb.addProjection("new list", "ee__, e__", false, false);
         // WHERE
         Parameters rootParameters = qb.getRootParameters();
         // ee.id_ref_ed = e.id_ref_ed
         referencedIdData.getPrefixedMapper().addIdsEqualToQuery(rootParameters, eeOriginalIdPropertyPath,
-                referencedIdData.getOriginalMapper(), "e." + originalIdPropertyName);
+                referencedIdData.getOriginalMapper(), "e__." + originalIdPropertyName);
         // ee.originalId.id_ref_ing = :id_ref_ing
         referencingIdData.getPrefixedMapper().addNamedIdEqualsToQuery(rootParameters, originalIdPropertyName, true);
 
         // (selecting e entities at revision :revision)
         // --> based on auditStrategy (see above)
-        auditStrategy.addEntityAtRevisionRestriction(globalCfg, qb, "e." + revisionPropertyPath,
-        		"e." + verEntCfg.getRevisionEndFieldName(), false,
-        		referencedIdData, revisionPropertyPath, originalIdPropertyName, "e", "e2");
+        auditStrategy.addEntityAtRevisionRestriction(globalCfg, qb, "e__." + revisionPropertyPath,
+        		"e__." + verEntCfg.getRevisionEndFieldName(), false,
+        		referencedIdData, revisionPropertyPath, originalIdPropertyName, "e__", "e2");
 
         // (with ee association at revision :revision)
         // --> based on auditStrategy (see above)
@@ -117,7 +117,7 @@ public final class TwoEntityQueryGenerator implements RelationQueryGenerator {
         // ee.revision_type != DEL
         rootParameters.addWhereWithNamedParam(verEntCfg.getRevisionTypePropName(), "!=", "delrevisiontype");
         // e.revision_type != DEL
-        rootParameters.addWhereWithNamedParam("e." + verEntCfg.getRevisionTypePropName(), false, "!=", "delrevisiontype");
+        rootParameters.addWhereWithNamedParam("e__." + verEntCfg.getRevisionTypePropName(), false, "!=", "delrevisiontype");
 
         StringBuilder sb = new StringBuilder();
         qb.build(sb, Collections.<String, Object>emptyMap());
